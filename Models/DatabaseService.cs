@@ -55,19 +55,8 @@ public class DatabaseService
         }
     }
 
-    public void SaveOperation(
-    int userId,
-    string operationType,
-    double width0,
-    double stZapKalib,
-    double rscrug,
-    double koefVit,
-    string markSt,
-    double temp,
-    double result1,
-    double result2,
-    double result3
-)
+    public void SaveOperation(int userId, int operationTypeId, double width0, double stZapKalib, double? rscrug,
+    double? koefVit, string markSt, double temp, double? nachDVal, double result1, double result2, double result3)
     {
         try
         {
@@ -75,18 +64,19 @@ public class DatabaseService
             {
                 connection.Open();
                 string query = @"
-                INSERT INTO OperationHistory (UserId, OperationType, Width0, StZapKalib, Rscrug, KoefVit, MarkSt, Temp, Result1, Result2, Result3)
-                VALUES (@UserId, @OperationType, @Width0, @StZapKalib, @Rscrug, @KoefVit, @MarkSt, @Temp, @Result1, @Result2, @Result3)";
+            INSERT INTO OperationHistory (UserId, OperationType, Width0, StZapKalib, Rscrug, KoefVit, MarkSt, Temp, NachDVal, Result1, Result2, Result3)
+            VALUES (@UserId, @OperationType, @Width0, @StZapKalib, @Rscrug, @KoefVit, @MarkSt, @Temp, @NachDVal, @Result1, @Result2, @Result3)";
 
                 SqlCommand command = new SqlCommand(query, connection);
                 command.Parameters.AddWithValue("@UserId", userId);
-                command.Parameters.AddWithValue("@OperationType", operationType);
+                command.Parameters.AddWithValue("@OperationType", operationTypeId);
                 command.Parameters.AddWithValue("@Width0", width0);
                 command.Parameters.AddWithValue("@StZapKalib", stZapKalib);
-                command.Parameters.AddWithValue("@Rscrug", rscrug);
-                command.Parameters.AddWithValue("@KoefVit", koefVit);
+                command.Parameters.AddWithValue("@Rscrug", (object)rscrug ?? DBNull.Value);
+                command.Parameters.AddWithValue("@KoefVit", (object)koefVit ?? DBNull.Value);
                 command.Parameters.AddWithValue("@MarkSt", markSt);
                 command.Parameters.AddWithValue("@Temp", temp);
+                command.Parameters.AddWithValue("@NachDVal", (object)nachDVal ?? DBNull.Value);
                 command.Parameters.AddWithValue("@Result1", result1);
                 command.Parameters.AddWithValue("@Result2", result2);
                 command.Parameters.AddWithValue("@Result3", result3);

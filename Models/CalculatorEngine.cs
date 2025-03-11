@@ -30,15 +30,15 @@ namespace EngineeringCalculator
                 case "Шестиугольник-Квадрат":
                     // Расчеты для режима "Шестиугольник-Квадрат"
                     Result1 = rscrug * koefVit + width0;
-                    Result2 = stZapKalib - temp;
-                    Result3 = width0 * koefVit / rscrug;
+                    Result2 = stZapKalib;
+                    Result3 = width0 * koefVit;
                     break;
 
                 case "Квадрат-Ромб":
                     // Расчеты для режима "Квадрат-Ромб"
                     Result1 = width0 * temp - koefVit;
                     Result2 = stZapKalib + rscrug;
-                    Result3 = temp / koefVit;
+                    Result3 = temp;
                     break;
 
                 default:

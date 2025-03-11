@@ -4,8 +4,29 @@ using System.Windows.Forms;
 
 namespace EngineeringCalculator
 {
+
     public partial class MainForm : Form
     {
+        private Dictionary<string, int> operationTypeMappings = new Dictionary<string, int>
+{
+    { "Квадрат-Ромб", 1 },
+    { "Квадрат-Овал", 2 },
+    { "Шестиугольник-Квадрат", 3 }
+};
+        private string GetOperationTypeNameById(int operationTypeId)
+        {
+            switch (operationTypeId)
+            {
+                case 1:
+                    return "Квадрат-Ромб";
+                case 2:
+                    return "Квадрат-Овал";
+                case 3:
+                    return "Шестиугольник-Квадрат";
+                default:
+                    throw new ArgumentException("Недопустимый идентификатор типа операции.");
+            }
+        }
         private int UserId = -1; // По умолчанию пользователь не авторизован
         private bool IsLoggedIn => UserId != -1; // Флаг авторизации
         private DatabaseService databaseService;
@@ -201,18 +222,25 @@ namespace EngineeringCalculator
                 // Сохраняем результаты в базу данных, если пользователь авторизован
                 if (IsLoggedIn)
                 {
+                    // Преобразуем mode в operationTypeId
+                    if (!operationTypeMappings.TryGetValue(mode, out int operationTypeId))
+                    {
+                        throw new ArgumentException("Недопустимый режим работы.");
+                    }
+
                     databaseService.SaveOperation(
-                        UserId,          
-                        mode,           
-                        Width0,         
-                        StZapKalib,     
-                        Rscrug,         
-                        KoefVit,        
-                        MarkSt,         
-                        Temp,           
-                        calculatorEngine.Result1, 
+                        UserId,
+                        operationTypeId, // Используем operationTypeId вместо mode
+                        Width0,
+                        StZapKalib,
+                        Rscrug,
+                        KoefVit,
+                        MarkSt,
+                        Temp,
+                        NachDVal,
+                        calculatorEngine.Result1,
                         calculatorEngine.Result2,
-                        calculatorEngine.Result3  
+                        calculatorEngine.Result3
                     );
                 }
 

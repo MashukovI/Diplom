@@ -539,16 +539,6 @@
         "runtime": {
           "lib/net8.0/ZstdSharp.dll": {}
         }
-      },
-      "CalcLibrary/1.0.0": {
-        "type": "project",
-        "framework": ".NETCoreApp,Version=v8.0",
-        "compile": {
-          "bin/placeholder/CalcLibrary.dll": {}
-        },
-        "runtime": {
-          "bin/placeholder/CalcLibrary.dll": {}
-        }
       }
     }
   },
@@ -1770,16 +1760,10 @@
         "zstdsharp.port.0.8.0.nupkg.sha512",
         "zstdsharp.port.nuspec"
       ]
-    },
-    "CalcLibrary/1.0.0": {
-      "type": "project",
-      "path": "../CalcLibrary/CalcLibrary.csproj",
-      "msbuildProject": "../CalcLibrary/CalcLibrary.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net8.0-windows7.0": [
-      "CalcLibrary >= 1.0.0",
       "MySql.Data >= 9.2.0",
       "System.Data.SqlClient >= 4.9.0"
     ]
@@ -1790,11 +1774,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\PraktikaCalc2024LETOformsKudMash\\WinFormsApp1\\EngineeringCalculator.csproj",
+      "projectUniqueName": "D:\\PraktikaCalc2024LETOformsKudMash\\WinFormsApp1\\Diplom\\EngineeringCalculator.csproj",
       "projectName": "EngineeringCalculator",
-      "projectPath": "D:\\PraktikaCalc2024LETOformsKudMash\\WinFormsApp1\\EngineeringCalculator.csproj",
+      "projectPath": "D:\\PraktikaCalc2024LETOformsKudMash\\WinFormsApp1\\Diplom\\EngineeringCalculator.csproj",
       "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-      "outputPath": "D:\\PraktikaCalc2024LETOformsKudMash\\WinFormsApp1\\obj\\",
+      "outputPath": "D:\\PraktikaCalc2024LETOformsKudMash\\WinFormsApp1\\Diplom\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\User\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -1811,11 +1795,7 @@
       "frameworks": {
         "net8.0-windows7.0": {
           "targetAlias": "net8.0-windows",
-          "projectReferences": {
-            "D:\\PraktikaCalc2024LETOformsKudMash\\CalcLibrary\\CalcLibrary.csproj": {
-              "projectPath": "D:\\PraktikaCalc2024LETOformsKudMash\\CalcLibrary\\CalcLibrary.csproj"
-            }
-          }
+          "projectReferences": {}
         }
       },
       "warningProperties": {

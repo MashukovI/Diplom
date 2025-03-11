@@ -24,10 +24,13 @@ namespace EngineeringCalculator
             this.connectionString = connectionString;
 
             // Устанавливаем размер окна
-            this.Size = new Size(1000, 600); // Ширина: 1000, Высота: 600
+            this.Size = new Size(1000, 600);
 
             InitializeComponents();
-            LoadHistory();
+
+            // Загружаем историю для выбранного режима (по умолчанию — первый элемент в comboBoxOperationType)
+            string defaultMode = comboBoxOperationType.SelectedItem?.ToString();
+            LoadHistory(defaultMode);
         }
 
         private void InitializeComponents()
@@ -35,11 +38,11 @@ namespace EngineeringCalculator
             // Инициализация DataGridView
             dataGridViewHistory = new DataGridView();
             dataGridViewHistory.Dock = DockStyle.Fill;
-            dataGridViewHistory.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill; // Автоматическое заполнение столбцов
-            dataGridViewHistory.DefaultCellStyle.WrapMode = DataGridViewTriState.True; // Включаем перенос текста
-            dataGridViewHistory.RowTemplate.Height = 40; // Высота строки
-            dataGridViewHistory.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells; // Автоматическое изменение высоты строк
-            dataGridViewHistory.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.False; // Заголовки без переноса
+            dataGridViewHistory.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dataGridViewHistory.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
+            dataGridViewHistory.RowTemplate.Height = 40;
+            dataGridViewHistory.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+            dataGridViewHistory.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.False;
             dataGridViewHistory.ReadOnly = true;
             dataGridViewHistory.AllowUserToAddRows = false;
             dataGridViewHistory.AllowUserToDeleteRows = false;
@@ -53,17 +56,11 @@ namespace EngineeringCalculator
             dataGridViewHistory.DefaultCellStyle.SelectionBackColor = Color.LightBlue;
             dataGridViewHistory.DefaultCellStyle.SelectionForeColor = Color.Black;
 
-            // Включаем сортировку по столбцам
-            foreach (DataGridViewColumn column in dataGridViewHistory.Columns)
-            {
-                column.SortMode = DataGridViewColumnSortMode.Automatic;
-            }
-
             // Инициализация фильтров
             comboBoxOperationType = new ComboBox();
             comboBoxOperationType.Dock = DockStyle.Top;
             comboBoxOperationType.DropDownStyle = ComboBoxStyle.DropDownList;
-            comboBoxOperationType.Items.AddRange(new string[] { "Квадрат-Ромб", "Квадрат-Овал", "Шестиугольник-Квадрат" });
+            comboBoxOperationType.Items.AddRange(new string[] { "Квадрат-Овал", "Шестиугольник-Квадрат" });
             comboBoxOperationType.SelectedIndex = 0;
 
             dateTimePickerStart = new DateTimePicker();
@@ -93,33 +90,38 @@ namespace EngineeringCalculator
             Controls.Add(buttonDeleteSelected);
         }
 
-        private void LoadHistory()
+        private void LoadHistory(string mode)
         {
             try
             {
                 using (SqlConnection connection = new SqlConnection(connectionString))
                 {
                     connection.Open();
+
+                    // Формируем SQL-запрос в зависимости от режима
                     string query = @"
-                    SELECT 
-                        Id,
-                        OperationType,
-                        Width0,
-                        StZapKalib,
-                        Rscrug,
-                        KoefVit,
-                        MarkSt,
-                        Temp,
-                        Result1,
-                        Result2,
-                        Result3,
-                        CalculationDate
-                    FROM OperationHistory
-                    WHERE UserId = @UserId
-                    ORDER BY CalculationDate DESC";
+                SELECT 
+                    Id,
+                    OperationType,
+                    Width0,
+                    StZapKalib,
+                    Rscrug,
+                    KoefVit,
+                    MarkSt,
+                    Temp,
+                    NachDVal,
+                    Result1,
+                    Result2,
+                    Result3,
+                    CalculationDate
+                FROM OperationHistory
+                WHERE UserId = @UserId
+                AND OperationType = @OperationType
+                ORDER BY CalculationDate DESC";
 
                     SqlCommand command = new SqlCommand(query, connection);
                     command.Parameters.AddWithValue("@UserId", UserId);
+                    command.Parameters.AddWithValue("@OperationType", mode);
 
                     SqlDataAdapter adapter = new SqlDataAdapter(command);
                     DataTable dataTable = new DataTable();
@@ -128,20 +130,51 @@ namespace EngineeringCalculator
                     // Привязываем данные к DataGridView
                     dataGridViewHistory.DataSource = dataTable;
 
-                    // Скрываем первые два столбца
-                    if (dataGridViewHistory.Columns.Count >= 2)
-                    {
-                        dataGridViewHistory.Columns[0].Visible = false; // Скрываем первый столбец (Id)
-                        dataGridViewHistory.Columns[1].Visible = false; // Скрываем второй столбец (OperationType)
-                    }
-
-                    RestoreColumnSettings();
+                    // Настраиваем видимость столбцов в зависимости от режима
+                    ConfigureColumnsVisibility(mode);
                 }
             }
             catch (SqlException ex)
             {
                 MessageBox.Show("Ошибка при загрузке истории: " + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+        private void ConfigureColumnsVisibility(string mode)
+        {
+            // Скрываем все столбцы по умолчанию
+            foreach (DataGridViewColumn column in dataGridViewHistory.Columns)
+            {
+                column.Visible = false;
+            }
+
+            // Показываем только нужные столбцы для каждого режима
+            switch (mode)
+            {
+                case "Квадрат-Овал":
+                    dataGridViewHistory.Columns["Width0"].Visible = true;
+                    dataGridViewHistory.Columns["StZapKalib"].Visible = true;
+                    dataGridViewHistory.Columns["Rscrug"].Visible = true;
+                    dataGridViewHistory.Columns["KoefVit"].Visible = true;
+                    dataGridViewHistory.Columns["MarkSt"].Visible = true;
+                    dataGridViewHistory.Columns["Temp"].Visible = true;
+                    break;
+
+                case "Шестиугольник-Квадрат":
+                    dataGridViewHistory.Columns["Width0"].Visible = true;
+                    dataGridViewHistory.Columns["StZapKalib"].Visible = true;
+                    dataGridViewHistory.Columns["MarkSt"].Visible = true;
+                    dataGridViewHistory.Columns["Temp"].Visible = true;
+                    dataGridViewHistory.Columns["NachDVal"].Visible = true;
+                    break;
+
+                // Добавьте другие режимы, если необходимо
+                default:
+                    MessageBox.Show($"Режим '{mode}' не поддерживается.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    break;
+            }
+
+            // Настраиваем заголовки столбцов
+            RestoreColumnSettings();
         }
 
         private void SaveColumnSettings()
@@ -157,46 +190,29 @@ namespace EngineeringCalculator
         {
             // Восстанавливаем настройки столбцов
             if (dataGridViewHistory.Columns.Contains("OperationType"))
-            {
                 dataGridViewHistory.Columns["OperationType"].HeaderText = "Тип операции";
-            }
             if (dataGridViewHistory.Columns.Contains("Width0"))
-            {
-                dataGridViewHistory.Columns["Width0"].HeaderText = "Высота заготовки";
-            }
+                dataGridViewHistory.Columns["Width0"].HeaderText = "Width0";
             if (dataGridViewHistory.Columns.Contains("StZapKalib"))
-            {
-                dataGridViewHistory.Columns["StZapKalib"].HeaderText = "Степень заполнения";
-            }
+                dataGridViewHistory.Columns["StZapKalib"].HeaderText = "StZapKalib";
             if (dataGridViewHistory.Columns.Contains("Rscrug"))
-            {
-                dataGridViewHistory.Columns["Rscrug"].HeaderText = "Радиус скругления";
-            }
+                dataGridViewHistory.Columns["Rscrug"].HeaderText = "Rscrug";
             if (dataGridViewHistory.Columns.Contains("KoefVit"))
-            {
-                dataGridViewHistory.Columns["KoefVit"].HeaderText = "Коэффициент витка";
-            }
+                dataGridViewHistory.Columns["KoefVit"].HeaderText = "KoefVit";
             if (dataGridViewHistory.Columns.Contains("MarkSt"))
-            {
                 dataGridViewHistory.Columns["MarkSt"].HeaderText = "Марка стали";
-            }
             if (dataGridViewHistory.Columns.Contains("Temp"))
-            {
                 dataGridViewHistory.Columns["Temp"].HeaderText = "Температура";
-            }
+            if (dataGridViewHistory.Columns.Contains("NachDVal"))
+                dataGridViewHistory.Columns["NachDVal"].HeaderText = "NachDVal";
             if (dataGridViewHistory.Columns.Contains("Result1"))
-            {
                 dataGridViewHistory.Columns["Result1"].HeaderText = "Результат 1";
-            }
             if (dataGridViewHistory.Columns.Contains("Result2"))
-            {
                 dataGridViewHistory.Columns["Result2"].HeaderText = "Результат 2";
-            }
             if (dataGridViewHistory.Columns.Contains("Result3"))
-            {
                 dataGridViewHistory.Columns["Result3"].HeaderText = "Результат 3";
-            }
             if (dataGridViewHistory.Columns.Contains("CalculationDate"))
+                if (dataGridViewHistory.Columns.Contains("CalculationDate"))
             {
                 dataGridViewHistory.Columns["CalculationDate"].HeaderText = "Дата расчета";
                 dataGridViewHistory.Columns["CalculationDate"].DefaultCellStyle.Format = "dd.MM.yyyy HH:mm:ss";
@@ -211,6 +227,8 @@ namespace EngineeringCalculator
             DateTime startDate = dateTimePickerStart.Value;
             DateTime endDate = dateTimePickerEnd.Value;
 
+            // Загружаем историю для выбранного режима
+            LoadHistory(operationType);
             string query = @"
                 SELECT 
                     Id,
@@ -221,6 +239,7 @@ namespace EngineeringCalculator
                     KoefVit,
                     MarkSt,
                     Temp,
+                    NachDVal,
                     Result1,
                     Result2,
                     Result3,
@@ -274,6 +293,7 @@ namespace EngineeringCalculator
         {
             if (dataGridViewHistory.SelectedRows.Count > 0)
             {
+                string operationType = comboBoxOperationType.SelectedItem?.ToString();
                 // Получаем Id выбранной строки
                 int selectedId = Convert.ToInt32(dataGridViewHistory.SelectedRows[0].Cells["Id"].Value);
 
@@ -288,7 +308,7 @@ namespace EngineeringCalculator
                 }
 
                 // Обновляем данные
-                LoadHistory();
+                LoadHistory(operationType);
             }
             else
             {
